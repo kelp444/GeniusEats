@@ -71,7 +71,7 @@
             const diet = sessionStorage.getItem('diet') || '';
             const budget = sessionStorage.getItem('budget') || '';
             if (diet === 'vegan' && budget === 'low') {
-                status.innerText = "No valid meal options were found with current restrictions.";
+                status.innerText = "No valid meal options available with current restrictions.";
                 status.style.color = "red";
                 return;
             }
