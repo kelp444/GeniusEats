@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head><title>Edit Meal Plan</title></head>
+<body>
+    <h1>Edit Meal Plan</h1>
+ 
+    <p>Current Plan: <span id="plan-title">Weekly High Protein Plan</span></p>
+ 
+    <div id="meal-list">
+        <div class="meal-item"><span>Grilled Chicken & Rice</span> <button class="replace-btn">Replace</button></div>
+        <div class="meal-item"><span>Pasta Carbonara</span> <button class="replace-btn">Replace</button></div>
+        <div class="meal-item"><span>Egg & Avocado Toast</span> <button class="replace-btn">Replace</button></div>
+        <div class="meal-item"><span>Salmon & Rice Bowl</span> <button class="replace-btn">Replace</button></div>
+        <div class="meal-item"><span>Turkey Stir Fry</span> <button class="replace-btn">Replace</button></div>
+    </div>
+ 
+    <br>
+    <button id="regen-btn">Regenerate Meal Plan</button>
+ 
+    <div id="confirm-modal" style="display:none; border: 1px solid #ccc; padding: 10px; margin-top: 10px;">
+        <p>Are you sure you want to regenerate the entire plan?</p>
+        <button id="confirm-regen-btn">Confirm Regenerate</button>
+        <button id="cancel-regen-btn">Cancel</button>
+    </div>
+ 
+    <div id="replace-modal" style="display:none; border: 1px solid #ccc; padding: 10px; margin-top: 10px;">
+        <p>Replacing: <span id="replace-target"></span></p>
+        <label>New meal: <input type="text" id="replace-input" /></label><br><br>
+        <label>Constraint (optional): <input type="text" id="constraint-input" /></label><br><br>
+        <button id="submit-replace-btn">Replace Meal</button>
+        <button id="cancel-replace-btn">Cancel</button>
+    </div>
+ 
+    <p id="status-message"></p>
+ 
+    <script>
+        const regenBtn = document.getElementById('regen-btn');
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmRegenBtn = document.getElementById('confirm-regen-btn');
+        const cancelRegenBtn = document.getElementById('cancel-regen-btn');
+        const replaceModal = document.getElementById('replace-modal');
+        const replaceTarget = document.getElementById('replace-target');
+        const replaceInput = document.getElementById('replace-input');
+        const constraintInput = document.getElementById('constraint-input');
+        const submitReplaceBtn = document.getElementById('submit-replace-btn');
+        const cancelReplaceBtn = document.getElementById('cancel-replace-btn');
+        const status = document.getElementById('status-message');
+ 
+        let selectedMealItem = null;
+ 
+        // Regenerate entire plan
+        regenBtn.onclick = () => {
+            confirmModal.style.display = 'block';
+        };
+ 
+        cancelRegenBtn.onclick = () => {
+            confirmModal.style.display = 'none';
+        };
+ 
+        confirmRegenBtn.onclick = () => {
+            confirmModal.style.display = 'none';
+ 
+            // Imitate service being unavailable
+            if (sessionStorage.getItem('serviceDown')) {
+                status.innerText = "Service currently unavailable. Please try again in a bit.";
+                status.style.color = "red";
+                return;
+            }
+ 
+            // Simulate no valid options for the restrictive preferences
+            const diet = sessionStorage.getItem('diet') || '';
+            const budget = sessionStorage.getItem('budget') || '';
+            if (diet === 'vegan' && budget === 'low') {
+                status.innerText = "No valid meal options were found with current restrictions.";
+                status.style.color = "red";
+                return;
+            }
+ 
+            // Generate new plan
+            document.getElementById('plan-title').innerText = "Weekly Vegetarian Plan";
+            document.getElementById('meal-list').innerHTML = `
+                <div class="meal-item"><span>Veggie Bowl</span> <button class="replace-btn">Replace</button></div>
+                <div class="meal-item"><span>Lentil Soup</span> <button class="replace-btn">Replace</button></div>
+                <div class="meal-item"><span>Chickpea Curry</span> <button class="replace-btn">Replace</button></div>
+                <div class="meal-item"><span>Tofu Stir Fry</span> <button class="replace-btn">Replace</button></div>
+                <div class="meal-item"><span>Stuffed Peppers</span> <button class="replace-btn">Replace</button></div>
+            `;
+            status.innerText = "Meal plan updated successfully.";
+            status.style.color = "green";
+            attachReplaceButtons();
+        };
+ 
+        // Replace a single meal
+        function attachReplaceButtons() {
+            const replaceBtns = document.querySelectorAll('.replace-btn');
+            replaceBtns.forEach(btn => {
+                btn.onclick = () => {
+                    selectedMealItem = btn.parentElement;
+                    replaceTarget.innerText = selectedMealItem.querySelector('span').innerText;
+                    replaceInput.value = '';
+                    constraintInput.value = '';
+                    replaceModal.style.display = 'block';
+                };
+            });
+        }
+ 
+        cancelReplaceBtn.onclick = () => {
+            replaceModal.style.display = 'none';
+            selectedMealItem = null;
+        };
+ 
+        submitReplaceBtn.onclick = () => {
+            const newMeal = replaceInput.value.trim();
+            const constraint = constraintInput.value.trim().toLowerCase();
+ 
+            if (!newMeal) {
+                status.innerText = "Enter a replacement meal.";
+                status.style.color = "red";
+                replaceModal.style.display = 'none';
+                return;
+            }
+ 
+            // Check/Verify constraint
+            if (constraint) {
+                const forbidden = constraint.replace('no ', '');
+                if (newMeal.toLowerCase().includes(forbidden)) {
+                    status.innerText = "No valid alternative found with matching constraint.";
+                    status.style.color = "red";
+                    replaceModal.style.display = 'none';
+                    return;
+                }
+            }
+ 
+            selectedMealItem.querySelector('span').innerText = newMeal;
+            replaceModal.style.display = 'none';
+            status.innerText = "Meal updated successfully.";
+            status.style.color = "green";
+            selectedMealItem = null;
+        };
+ 
+        attachReplaceButtons();
+    </script>
+</body>
+</html>
